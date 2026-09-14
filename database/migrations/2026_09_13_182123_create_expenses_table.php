@@ -19,12 +19,12 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('amount', 10,2);
             $table->date('date');
-            $table->enum('type',['one_time','recuring'])->default('one_time');
+            $table->enum('type',['one_time','recurring'])->default('one_time');
 
 
-            $table->enum('recuring_frequense',['daily','weekly','monthly','yearly'])->nullable();
-            $table->date('recuring_start_date')->nullable();
-            $table->date('recuring_end_date')->nullable();
+            $table->enum('recurring_frequense',['daily','weekly','monthly','yearly'])->nullable();
+            $table->date('recurring_start_date')->nullable();
+            $table->date('recurring_end_date')->nullable();
             $table->foreignId('parent_expense_id')->nullable()->constrained('expenses')->nullOnDelete();
             $table->boolean('is_auto_generate')->default(false);
             $table->timestamps();
