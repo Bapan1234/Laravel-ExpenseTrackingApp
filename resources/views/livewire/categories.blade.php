@@ -44,98 +44,103 @@ new class extends Component
 }
 ?>
 
-<div class="min-h-screen bg-gray-50 dark:bg-natural-900">
-    <div class="bg-gradient-to-r from-green-6oo to-emerald-600 shadow-lg">
-        <div class="max-w-7x1 mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div>
-                <h1 class="text-3x1 font-bold text-white">Categories</h1>
-                <p class="text-green-100 mt-1">Organize your expense with custom categories</p>
-            </div>
-        </div>
+<div class="w-full space-y-6 text-gray-900">
+
+    <!-- Header Banner -->
+    <div class="w-full rounded-2xl p-6 text-white shadow-sm" style="background-color: #10b981;">
+        <h1 class="text-3xl font-bold tracking-tight">Categories</h1>
+        <p class="text-emerald-100 mt-1 text-sm">Organize your expenses with custom categories</p>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    @if (session()->has('message'))
-        <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center justify-between">
-            <span>{{ session('message') }}</span>
-            <button onclick="this.parentElement.remove()" class="text-green-600 hover:text-green-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-    @endif
+    <!-- Main Grid Section -->
+    <div style="display: flex; gap: 1.5rem; align-items: flex-start; width: 100%;">
 
-    @if (session()->has('error'))
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center justify-between">
-            <span>{{ session('error') }}</span>
-            <button onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-    @endif
-    </div>
+        <!-- Form Div (Exactly 1/3 Width) -->
+        <div style="width: 33.3333%; min-width: 320px; flex-shrink: 0;" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    {{-- Create/Edit Category Form --}}
-    <div class="lg:col-span-1">
-        <div class="bg-white rounded-xl shadow-md p-6 sticky top-8">
-            <h3 class="text-lg font-semibold text-gray-800 mb-6">
+            <h2 class="text-base font-semibold text-gray-900 mb-5 text-black">
                 {{ $isEditing ? 'Edit Category' : 'Create Category' }}
-            </h3>
+            </h2>
 
-            <form wire:submit="save" class="space-y-4">
-                <!-- Category Name -->
+            <form wire:submit="save" style="display: flex; flex-direction: column; gap: 1.25rem;">
+
+                <!-- Category Name Field -->
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="name" class="block text-xs font-medium text-gray-600 mb-1.5">
                         Category Name <span class="text-red-500">*</span>
                     </label>
                     <input type="text"
                         id="name"
-                        wire:model="name"
+                        wire:model.live="name"
                         placeholder="e.g., Food & Dining"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('name') border-red-500 @enderror">
+                        class="w-full px-3 py-2 text-sm border text-black border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition @error('name') border-red-500 @enderror">
 
                     @error('name')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Form Actions -->
-                <div class="flex items-center gap-3 pt-2">
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200">
-                        {{ $isEditing ? 'Update Category' : 'Create Category' }}
-                    </button>
+                <!-- Color Picker Grid -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-2">
+                        Color <span class="text-red-500">*</span>
+                    </label>
 
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        @foreach($colors as $colorOption)
+                            <button type="button"
+                                wire:click="$set('color', '{{ $colorOption }}')"
+                                class="rounded-lg transition-transform hover:scale-105 focus:outline-none flex items-center justify-center"
+                                style="width: 2rem; height: 2rem; background-color: {{ $colorOption }}; {{ $color === $colorOption ? 'outline: 2px solid #10b981; outline-offset: 2px;' : '' }}">
+                            </button>
+                        @endforeach
+                    </div>
+
+                    @error('color')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Preview Container -->
+                <div class="p-3 bg-gray-50/80 rounded-xl border border-dashed border-gray-200">
+                    <p class="text-xs text-gray-500 mb-2">Preview:</p>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
+                        style="background-color: {{ $color }}20; color: {{ $color }};">
+                        <span class="w-2 h-2 rounded-full" style="background-color: {{ $color }};"></span>
+                        {{ $name ?: 'Category Name' }}
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
                     @if($isEditing)
-                        <button type="button" wire:click="resetForm" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition duration-200">
-                            Cancel
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button"
+                                wire:click="cancelEdit"
+                                class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="flex-1 px-4 py-2.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition">
+                                Update
+                            </button>
+                        </div>
+                    @else
+                        <button type="submit"
+                            class="w-full px-4 py-2.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition shadow-sm">
+                            Create
                         </button>
                     @endif
                 </div>
-                <div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">
-        Color <span class="text-red-500">*</span>
-    </label>
 
-    <div class="grid grid-cols-6 gap-2">
-        @foreach($colors as $colorOption)
-            <button type="button"
-                wire:click="$set('color', '{{ $colorOption }}')"
-                class="w-10 h-10 rounded-lg transition transform hover:scale-110 focus:outline-none {{ $color === $colorOption ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110' : '' }}"
-                style="background-color: {{ $colorOption }};">
-            </button>
-        @endforeach
-    </div>
-
-    @error('color')
-        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-    @enderror
-</div>
             </form>
         </div>
+
+        <!-- Category List Table Area (Remaining 2/3 Width) -->
+        <div style="width: 66.6666%; flex-grow: 1;">
+            <!-- Categories list content goes here -->
+        </div>
+
     </div>
 </div>
 
