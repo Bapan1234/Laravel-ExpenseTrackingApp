@@ -33,13 +33,62 @@ new class extends Component
         "#78716C", // STONE
     ];
 
+    protected function rules(){
+        return [
+            'name'=>'required|string|max:255|unique:categories,name,'.($this->editingId?:'null') .',id,user_id,'. auth()->id(),
+            'color'=>'required|string',
+            'icon'=>'nullable|string|max:255'
+        ];
+    }
+
+    protected $messages = [
+        'name.required'=>'Please Enter Categories Name',
+        'name.unique'=>'Categories Name already Save',
+        'color.required' =>'select the color'
+    ];
+
     //use the computed properties
     #[Computed]
     public function categories(){
-        return Category::withCount('exoenses')
+        return Category::withCount('expenses')
         ->where('user_id',auth()->user()->id)
         ->OrderBy('name')
         ->get();
+    }
+
+    public function save(){
+        $this->validate();
+
+        Category::create([
+            'user_id'=>auth()->id(),
+            'name'=>$this->name,
+            'color'=>$this->color,
+            'icon'=>$this->icon,
+        ]);
+
+        session()->flash('message','Categories Created Successfuly');
+
+        $this->reset(['name','color','icon','editingId','isEditing']);
+    }
+
+    public function edit($categoryId){
+       $category = Category::findOrFail($categoryId);
+
+       if($category->user_id1==auth()->id()){
+        abort(403);
+       }
+
+       $this->editingId = $category->id;
+       $this->name = $category->name;
+       $this->color = $category->color;
+       $this->icon = $category->icon;
+       $this->isEditing = true;
+
+    }
+
+    public function cancelEdit(){
+        $this->reset(['name','color','icon','editingId', 'isEditing']);
+        $this->color ="#3B82F5";
     }
 }
 ?>
@@ -57,7 +106,12 @@ new class extends Component
 
         <!-- Form Div (Exactly 1/3 Width) -->
         <div style="width: 33.3333%; min-width: 320px; flex-shrink: 0;" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-
+            @if (session('message'))
+                <div class="alert alert-success alert-dismissible fade show text-black" role="alert">
+                    {{ session('message') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
             <h2 class="text-base font-semibold text-gray-900 mb-5 text-black">
                 {{ $isEditing ? 'Edit Category' : 'Create Category' }}
             </h2>
@@ -121,13 +175,13 @@ new class extends Component
                                 Cancel
                             </button>
                             <button type="submit"
-                                class="flex-1 px-4 py-2.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition">
+                                class="flex-1 px-4 py-2.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition" style="background-color: #10b981;">
                                 Update
                             </button>
                         </div>
                     @else
                         <button type="submit"
-                            class="w-full px-4 py-2.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition shadow-sm">
+                            class="w-full px-4 py-2.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-xl transition shadow-sm" style="background-color: #10b981;">
                             Create
                         </button>
                     @endif
@@ -138,7 +192,52 @@ new class extends Component
 
         <!-- Category List Table Area (Remaining 2/3 Width) -->
         <div style="width: 66.6666%; flex-grow: 1;">
-            <!-- Categories list content goes here -->
+                <!-- Flash Message -->
+                @if (session()->has('message'))
+                    <div class="mb-4 p-4 text-sm text-green-800 bg-green-100 rounded-lg dark:bg-gray-800 dark:text-green-400" role="alert">
+                        {{ session('message') }}
+                    </div>
+                @endif
+
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-400 mb-6">Your Categories</h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    @forelse ($this->categories() as $category)
+                        <div wire:key="category-{{ $category->id }}" style="background-color: {{ $category->color }}"
+                            class="aspect-square bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 flex flex-col justify-between items-center text-center transition hover:shadow-lg">
+
+                            <!-- Info -->
+                            <div class="flex-1 flex flex-col items-center justify-center">
+                                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                                    {{ $category->name }}
+                                </h3>
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
+                                    {{ $category->expenses_count }} {{ Str::plural('Expense', $category->expenses_count) }}
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2 w-full pt-3 border-t border-gray-100 dark:border-gray-700">
+                                <!-- Trigger Edit Event/Modal -->
+                                <button wire:click="edit({{ $category->id }})"
+                                        class="flex-1 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-md transition">
+                                    Edit
+                                </button>
+
+                                <!-- Direct Livewire Delete -->
+                                <button wire:click="deleteCategory({{ $category->id }})"
+                                        wire:confirm="Are you sure you want to delete {{ $category->name }}?"
+                                        class="flex-1 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-full text-center text-gray-500 py-10">
+                            No categories found.
+                        </div>
+                    @endforelse
+                </div>
         </div>
 
     </div>
