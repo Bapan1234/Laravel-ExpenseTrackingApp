@@ -59,14 +59,30 @@ new class extends Component
     public function save(){
         $this->validate();
 
-        Category::create([
-            'user_id'=>auth()->id(),
-            'name'=>$this->name,
-            'color'=>$this->color,
-            'icon'=>$this->icon,
-        ]);
+        if($this->editingId || $this->isEditing){
+            $category = Category::findOrFail($this->editingId);
+            if($category->user_id !== auth()->id()){
+                abort(403);
+            }
 
-        session()->flash('message','Categories Created Successfuly');
+            $category->update([
+                'name'=>$this->name,
+                'color'=>$this->color,
+                'icon'=>$this->icon
+            ]);
+
+            session()->flash('message','updated successfull');
+        }
+        else{
+            Category::create([
+                'user_id'=>auth()->id(),
+                'name'=>$this->name,
+                'color'=>$this->color,
+                'icon'=>$this->icon,
+            ]);
+
+            session()->flash('message','Categories Created Successfuly');
+        }
 
         $this->reset(['name','color','icon','editingId','isEditing']);
     }
@@ -90,6 +106,24 @@ new class extends Component
         $this->reset(['name','color','icon','editingId', 'isEditing']);
         $this->color ="#3B82F5";
     }
+
+    public function deleteCategory($categoryId){
+        $category = Category::findOrFail($categoryId);
+
+        if($category->user_id !== auth()->id()){
+            abort(403);
+        }
+
+        if($category->expenses()->count()>0){
+            session()->flash('message', 'Can not delete categories with exiting expense!');
+            return;
+        }
+
+        $category->delete();
+
+        session()->flash('message', 'category Delete Successfuly');
+    }
+
 }
 ?>
 
@@ -106,12 +140,7 @@ new class extends Component
 
         <!-- Form Div (Exactly 1/3 Width) -->
         <div style="width: 33.3333%; min-width: 320px; flex-shrink: 0;" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-            @if (session('message'))
-                <div class="alert alert-success alert-dismissible fade show text-black" role="alert">
-                    {{ session('message') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+
             <h2 class="text-base font-semibold text-gray-900 mb-5 text-black">
                 {{ $isEditing ? 'Edit Category' : 'Create Category' }}
             </h2>
