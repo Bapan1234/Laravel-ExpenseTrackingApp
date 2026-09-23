@@ -15,6 +15,7 @@
                 <flux:navlist.group heading="Platform" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>Dashboard</flux:navlist.item>
                     <flux:navlist.item icon="squares-2x2" :href="route('categories.index')" :current="request()->routeIs('categories.index')" wire:navigate>Categories</flux:navlist.item>
+                    <flux:navlist.item icon="credit-card" :href="route('budget.index')" :current="request()->routeIs('budget.index')" wire:navigate>Budgets</flux:navlist.item>
 
                 </flux:navlist.group>
             </flux:navlist>
