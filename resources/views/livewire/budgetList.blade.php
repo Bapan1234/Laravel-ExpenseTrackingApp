@@ -2,7 +2,7 @@
 
 use Livewire\Component;
 use App\Models\Budget;
-
+use Livewire\Attributes\Computed;
 new class extends Component
 {
     public $selectMonth;
@@ -27,7 +27,20 @@ new class extends Component
             $budget->is_over = $this ->isOverDue();
         });
     }
-};
+
+    #[Computed]
+    public function totalBudget(){
+        return $this->budgets->sum('amount');
+    }
+
+    public function totalSpent(){
+        return $this->budgets->sum('spent');
+    }
+
+    public function totalRemaing(){
+        return $this->budgets->sum('remaing');
+    }
+}
 ?>
 
 <div>
