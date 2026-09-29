@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\Budget;
+use App\Models\Category;
 use Livewire\Attributes\Computed;
 new class extends Component
 {
@@ -33,12 +34,29 @@ new class extends Component
         return $this->budgets->sum('amount');
     }
 
+    #[Computed]
     public function totalSpent(){
         return $this->budgets->sum('spent');
     }
 
+    #[Computed]
     public function totalRemaing(){
         return $this->budgets->sum('remaing');
+    }
+
+    #[Computed]
+    public function overallPercentage(){
+        if($this->totalBudget == 0){
+            return 0;
+        }
+        return round(($this->totalSpent/$this->totalBudget)*100, 1);
+    }
+
+    #[Computed]
+    public function categories(){
+        return Category::where('user)id', Auth::user()->id)
+                        ->orderBy('name')
+                        ->get();
     }
 }
 ?>
