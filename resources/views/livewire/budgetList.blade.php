@@ -4,6 +4,7 @@ use Livewire\Component;
 use App\Models\Budget;
 use App\Models\Category;
 use Livewire\Attributes\Computed;
+use Illuminate\Support\Carbon;
 new class extends Component
 {
     public $selectMonth;
@@ -58,6 +59,22 @@ new class extends Component
                         ->orderBy('name')
                         ->get();
     }
+
+    public function previousMonth(){
+        $date = Carbon::create($this->selectYear, $this->selectMonth,1)->subMonth();
+
+        $this->selectMonth =$date->month;
+        $this->selectYear = $date->year;
+    }
+
+    public function nextMonth(){
+        $date = Carbon::create($this->selectYear, $this->selectMonth, 1)->addMonth();
+
+        $this->selectMonth = $date->month;
+        $this->selectYear = $date->year;
+    }
+
+    
 }
 ?>
 
